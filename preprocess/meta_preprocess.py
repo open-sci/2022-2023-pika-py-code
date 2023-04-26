@@ -39,6 +39,7 @@ class MetaPreProcessing(Preprocessing):
                                              fieldnames=keys)
                 dict_writer.writeheader()
                 dict_writer.writerows(lines)
+                f_out.close()
             lines = []
             return lines
         else:
@@ -107,16 +108,3 @@ class MetaPreProcessing(Preprocessing):
         if len(lines) > 0:
             count = count + (self._interval - (int(count) % int(self._interval)))
             self.splitted_to_file(count, lines)
-
-
-
-
-
-
-
-
-
-
-
-
-
