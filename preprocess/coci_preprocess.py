@@ -10,6 +10,7 @@ from re import sub, match
 
 from preprocess.base import Preprocessing
 
+
 class CociPreProcessing(Preprocessing):
     _req_type = ".csv"
     _accepted_ids = "doi"
@@ -37,6 +38,7 @@ class CociPreProcessing(Preprocessing):
                                              fieldnames=keys)
                 dict_writer.writeheader()
                 dict_writer.writerows(lines)
+                f_out.close()
             lines = []
             return lines
         else:
@@ -63,9 +65,9 @@ class CociPreProcessing(Preprocessing):
                                 doi_cited = line.get("cited")
                                 line["citing"] = str(doi_citing)
                                 line["cited"] = str(doi_cited)
+                                lines.append(line)
                                 if int(count) != 0 and int(count) % int(self._interval) == 0:
                                     lines = self.splitted_to_file(count, lines)
         if len(lines) > 0:
             count = count + (self._interval - (int(count) % int(self._interval)))
             self.splitted_to_file(count, lines)
-
