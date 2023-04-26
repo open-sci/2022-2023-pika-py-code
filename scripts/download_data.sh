@@ -24,7 +24,7 @@ mkdir -p "${COCI}" "${META}" "${ERIH_PLUS}"
 echo "###############################################################################"
 # Download the data from the first URL and save it to the first subdirectory
 echo "Downloading COCI..."
-#wget -O "${COCI}/coci_data.zip" https://figshare.com/ndownloader/articles/6741422/versions/19
+wget -O "${COCI}/coci_data.zip" https://figshare.com/ndownloader/articles/6741422/versions/19
 
 echo "###############################################################################"
 # Download the data from the second URL and save it to the second subdirectory
@@ -34,7 +34,7 @@ wget -O "${META}/meta_data.zip" https://figshare.com/ndownloader/files/39266384
 echo "###############################################################################"
 # Download the data from the third URL and save it to the third subdirectory
 echo "Downloading ERIH-PLUS..."
-wget -O "${ERIH_PLUS}/erih_plus_data.csv" https://kanalregister.hkdir.no/publiseringskanaler/erihplus/periodical/listApprovedAsCsv
+wget -O "${ERIH_PLUS}/erihPlus_data.csv" https://kanalregister.hkdir.no/publiseringskanaler/erihplus/periodical/listApprovedAsCsv
 
 echo "###############################################################################"
 echo "Downloads completed, you can now run the next executable (preprocessing.sh)."
