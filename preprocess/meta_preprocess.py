@@ -8,7 +8,7 @@ from tqdm import tqdm
 import pandas as pd
 from re import sub, match
 
-from preprocess.base import Preprocessing
+from base import Preprocessing
 
 
 class MetaPreProcessing(Preprocessing):
@@ -39,6 +39,7 @@ class MetaPreProcessing(Preprocessing):
                                              fieldnames=keys)
                 dict_writer.writeheader()
                 dict_writer.writerows(lines)
+                f_out.close()
             lines = []
             return lines
         else:
@@ -107,16 +108,3 @@ class MetaPreProcessing(Preprocessing):
         if len(lines) > 0:
             count = count + (self._interval - (int(count) % int(self._interval)))
             self.splitted_to_file(count, lines)
-
-
-
-
-
-
-
-
-
-
-
-
-

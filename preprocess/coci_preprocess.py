@@ -8,7 +8,8 @@ from tqdm import tqdm
 import pandas as pd
 from re import sub, match
 
-from preprocess.base import Preprocessing
+from base import Preprocessing
+
 
 class CociPreProcessing(Preprocessing):
     _req_type = ".csv"
@@ -37,6 +38,7 @@ class CociPreProcessing(Preprocessing):
                                              fieldnames=keys)
                 dict_writer.writeheader()
                 dict_writer.writerows(lines)
+                f_out.close()
             lines = []
             return lines
         else:
@@ -63,9 +65,23 @@ class CociPreProcessing(Preprocessing):
                                 doi_cited = line.get("cited")
                                 line["citing"] = str(doi_citing)
                                 line["cited"] = str(doi_cited)
+                                lines.append(line)
                                 if int(count) != 0 and int(count) % int(self._interval) == 0:
                                     lines = self.splitted_to_file(count, lines)
         if len(lines) > 0:
             count = count + (self._interval - (int(count) % int(self._interval)))
             self.splitted_to_file(count, lines)
 
+###################################################################
+
+import argparse
+
+parser = argparse.ArgumentParser(description='COCI Preprocessing')
+parser.add_argument('--input-dir', type=str, help='Input directory path')
+parser.add_argument('--output-dir', type=str, help='Output directory path')
+parser.add_argument('--interval', type=int, default=3000000, help='Interval for splitting input files')
+
+args = parser.parse_args()
+
+coci_preprocessing = CociPreProcessing(input_dir=args.input_dir, output_dir=args.output_dir, interval=args.interval)
+coci_preprocessing.split_input()
