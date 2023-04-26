@@ -1,4 +1,5 @@
-# 2022-2023-pika-py-code
+# 2022-2023-pika-py-code 
+## Branch containing executables
  The repository for the team Pika.py of the Open Science course a.a. 2022/2023
 
 ## Executable scripts
