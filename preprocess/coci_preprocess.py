@@ -54,7 +54,7 @@ class CociPreProcessing(Preprocessing):
             if el:
                 all_files_unzipped, targz_fd_el = self.get_all_files(el, self._req_type)
                 for file_idx, file in enumerate(tqdm(all_files_unzipped), 1):
-                    chunksize = 100000
+                    chunksize = self._interval
                     with pd.read_csv(file, usecols= self._entity_columns_to_keep, chunksize=chunksize, sep=",") as reader:
                         for chunk in reader:
                             chunk.fillna("", inplace=True)
@@ -63,8 +63,8 @@ class CociPreProcessing(Preprocessing):
                                 count += 1
                                 doi_citing = line.get("citing")
                                 doi_cited = line.get("cited")
-                                line["citing"] = str(doi_citing)
-                                line["cited"] = str(doi_cited)
+                                line["citing"] = "doi:"+doi_citing
+                                line["cited"] = "doi:"+doi_cited
                                 lines.append(line)
                                 if int(count) != 0 and int(count) % int(self._interval) == 0:
                                     lines = self.splitted_to_file(count, lines)

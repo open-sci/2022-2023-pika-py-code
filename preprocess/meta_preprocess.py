@@ -75,7 +75,7 @@ class MetaPreProcessing(Preprocessing):
         # iterate over the input data
         all_files, targz_fd = self.get_all_files(self._input_dir, self._req_type)
         for file_idx, file in enumerate(tqdm(all_files), 1):
-            chunksize = 100000
+            chunksize = self._interval
             with pd.read_csv(file, chunksize=chunksize, sep=",") as reader:
                 for chunk in reader:
                     chunk.fillna("", inplace=True)
