@@ -16,12 +16,12 @@ class ErihPreProcessing():
             reader = csv.reader(csvfile, delimiter=';')
             for row in reader:
                 venue_dict = dict()
-                issn = list()
                 # venue_id
                 if row[1] and row[2]:
-                    issn.append('issn:' + str(row[1]))
-                    issn.append('issn:' + str(row[2]))
-                    venue_dict["venue_id"] = issn
+                    issn1 = 'issn:' + str(row[1])
+                    issn2 = 'issn:' + str(row[2])
+                    issn = issn1 + ' ' + issn2
+                    venue_dict["venue_id"] = str(issn)
                 elif row[1]:
                     venue_dict["venue_id"] = 'issn:' + str(row[1])
                 elif row[2]:
