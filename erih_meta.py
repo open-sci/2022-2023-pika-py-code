@@ -12,8 +12,7 @@ import datetime
 import csv
 
 
-
-class Erih_Meta():
+class ErihMeta:
     _entity_columns_to_keep = ["id", "title", "author", "issue", "volume", "venue", "page", "pub_date", "type", "publisher", "editor", "erih_disciplines"]
 
     def __init__(self, meta_preprocessed_path, erih_preprocessed_path, output_erih_meta, interval):
@@ -24,22 +23,16 @@ class Erih_Meta():
         if not os.path.exists(self._output_erih_meta):
             os.makedirs(self._output_erih_meta)
         self._interval = interval
-        super(Erih_Meta, self).__init__()
+        super(ErihMeta, self).__init__()
 
 
     def find_erih_venue(self, issn):
+        erih_disciplines = ""
         erih = pd.read_csv(self._erih_preprocessed_path, sep=";")
-        index_row = erih[erih['venue_id'] == issn].index
-        erih_disciplines_list = erih['ERIH_disciplines'][index_row].values.tolist()
-        erih_disciplines_string=""
-        for discipline in erih_disciplines_list:
-            erih_disciplines_string += discipline
-        new_erih_disciplines_string = re.sub("\s$", "", erih_disciplines_string)
-        return new_erih_disciplines_string
-
-            
-            
-
+        for index, row in erih.iterrows():
+            if issn in row['venue_id']:
+                erih_disciplines = row['ERIH_disciplines']
+        return erih_disciplines
 
     def get_all_files(self, i_dir_or_compr, req_type):
         result = []
@@ -49,7 +42,6 @@ class Erih_Meta():
                         if cur_file.endswith(req_type) and not os.path.basename(cur_file).startswith("."):
                             result.append(os.path.join(cur_dir, cur_file))
         return result
-
 
     def splitted_to_file(self, cur_n, lines, type=None):
             if int(cur_n) != 0 and int(cur_n) % int(self._interval) == 0:
@@ -69,7 +61,6 @@ class Erih_Meta():
                 return lines
             else:
                 return lines
-
 
     def erih_meta(self):
         lines = []

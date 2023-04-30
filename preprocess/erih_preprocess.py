@@ -39,8 +39,3 @@ class ErihPreProcessing():
             for dictionary in self.preprocess_ERIH_plus():
                 writer.writerow(dictionary.values())
         csv_output.close()
-
-
-    
-
-        
