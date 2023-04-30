@@ -30,8 +30,15 @@ class Erih_Meta():
     def find_erih_venue(self, issn):
         erih = pd.read_csv(self._erih_preprocessed_path, sep=";")
         index_row = erih[erih['venue_id'] == issn].index
-        erih_disciplines = erih['ERIH_disciplines'][index_row].values.tolist()
-        return erih_disciplines
+        erih_disciplines_list = erih['ERIH_disciplines'][index_row].values.tolist()
+        erih_disciplines_string=""
+        for discipline in erih_disciplines_list:
+            erih_disciplines_string += discipline
+        new_erih_disciplines_string = re.sub("\s$", "", erih_disciplines_string)
+        return new_erih_disciplines_string
+
+            
+            
 
 
     def get_all_files(self, i_dir_or_compr, req_type):
