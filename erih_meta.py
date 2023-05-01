@@ -27,13 +27,14 @@ class ErihMeta:
 
 
     def find_erih_venue(self, issn_list):
-        erih_disciplines = ""
+        erih_disciplines = set()
         erih = pd.read_csv(self._erih_preprocessed_path, sep=";")
         for index, row in erih.iterrows():
             for issn in issn_list:
                 if issn in row['venue_id']:
-                    erih_disciplines = row['ERIH_disciplines']
-        return erih_disciplines
+                    erih_disciplines.add(row['ERIH_disciplines'])
+        erih_disciplines = sorted(list(erih_disciplines))
+        return ', '.join(discipline for discipline in erih_disciplines)
 
     def get_all_files(self, i_dir_or_compr, req_type):
         result = []

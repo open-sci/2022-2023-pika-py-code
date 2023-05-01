@@ -13,10 +13,10 @@ class TestJalcProcess(unittest.TestCase):
 
     def test_find_erih_venue(self):
         e = ErihMeta(META_PRE, ERIH_PRE, OUTPUT, 20)
-        # in the cell erih['venue_id'] there are two issn and just one is in erih_preprocessed
+        # in the cell erih['venue_id'] there are two issn and both are in erih_preprocessed but in different cells
         issn1 = ['issn:1984-4182', 'issn:2362-6097']
         output1 = e.find_erih_venue(issn1)
-        expected_out1 = 'Art and Art History, Human Geography and Urban Studies, Interdisciplinary research in the Social Sciences'
+        expected_out1 = 'Art and Art History, Human Geography and Urban Studies, Interdisciplinary research in the Social Sciences, Law'
         # in the cell erih['venue_id'] there is a single issn that is in erih_preprocessed
         issn2 = ['issn:2065-1430']
         output2 = e.find_erih_venue(issn2)
@@ -25,18 +25,24 @@ class TestJalcProcess(unittest.TestCase):
         issn3 = ['issn:0000-0000', 'issn:0000-000X']
         output3 = e.find_erih_venue(issn3)
         expected_out3 = ""
-        #the issn are both in erih
+        #the issn are both in erih in the same cell
         issn4 = ['issn:2362-6089', 'issn:2362-6097']
         output4 = e.find_erih_venue(issn4)
         expected_out4 = 'Art and Art History, Human Geography and Urban Studies, Interdisciplinary research in the Social Sciences'
+        #just one issn is in erih
         issn5 = ['issn:1984-2090', 'issn:0374-6577', 'issn:1522-239X']
         output5 = e.find_erih_venue(issn5)
         expected_out5 = 'Literature'
+        #two issn are in erih in two different cells
+        issn6 = ['issn:1984-2090', 'issn:2065-1430', 'issn:1522-239X']
+        output6 = e.find_erih_venue(issn6)
+        expected_out6 = 'Literature, Pedagogical & Educational Research'
         self.assertEqual(output1, expected_out1)
         self.assertEqual(output2, expected_out2)
         self.assertEqual(output3, expected_out3)
         self.assertEqual(output4, expected_out4)
         self.assertEqual(output5, expected_out5)
+        self.assertEqual(output6, expected_out6)
 
     def test_erih_meta(self):
         self.maxDiff = None
