@@ -26,12 +26,13 @@ class ErihMeta:
         super(ErihMeta, self).__init__()
 
 
-    def find_erih_venue(self, issn):
+    def find_erih_venue(self, issn_list):
         erih_disciplines = ""
         erih = pd.read_csv(self._erih_preprocessed_path, sep=";")
         for index, row in erih.iterrows():
-            if issn in row['venue_id']:
-                erih_disciplines = row['ERIH_disciplines']
+            for issn in issn_list:
+                if issn in row['venue_id']:
+                    erih_disciplines = row['ERIH_disciplines']
         return erih_disciplines
 
     def get_all_files(self, i_dir_or_compr, req_type):
@@ -75,8 +76,12 @@ class ErihMeta:
                     for line in df_dict_list:
                         count += 1
                         issn_meta = line.get('venue')
-                        erih_disciplines = self.find_erih_venue(issn_meta)
-                        line['erih_disciplines'] = erih_disciplines
+                        if issn_meta:
+                            issn_meta = issn_meta.split(" ")
+                            erih_disciplines = self.find_erih_venue(issn_meta)
+                            line['erih_disciplines'] = erih_disciplines
+                        else:
+                            line['erih_disciplines'] = ""
                         lines.append(line)
                         if int(count) != 0 and int(count) % int(self._interval) == 0:
                             lines = self.splitted_to_file(count, lines)
