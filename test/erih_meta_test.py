@@ -5,8 +5,8 @@ import os
 import pandas as pd
 
 BASE = os.path.join('test', 'erih_meta_data')
-ERIH_PRE = os.path.join(BASE, 'erih_preprocessed.csv')
 META_PRE = os.path.join(BASE, 'meta_preprocessed')
+ERIH_PRE = os.path.join(BASE, 'erih_pre')
 OUTPUT = os.path.join(BASE, 'output')
 
 class TestJalcProcess(unittest.TestCase):

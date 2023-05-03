@@ -1,23 +1,16 @@
-from csv import reader
-from csv import writer
 import os
-import sys
-from argparse import ArgumentParser
-from tarfile import TarInfo
 import pandas as pd
 from tqdm import tqdm
-import zipfile
-import re
-import datetime
+from datetime import datetime
 import csv
-
+from lib.csv_manager import CSVManager
 
 class ErihMeta:
     _entity_columns_to_keep = ["id", "title", "author", "issue", "volume", "venue", "page", "pub_date", "type", "publisher", "editor", "erih_disciplines"]
 
     def __init__(self, meta_preprocessed_path, erih_preprocessed_path, output_erih_meta, interval):
         self._meta_preprocessed_path = meta_preprocessed_path
-        self._erih_preprocessed_path = erih_preprocessed_path
+        self._erih_preprocessed_path = CSVManager(erih_preprocessed_path)
         self._output_erih_meta = output_erih_meta
         self._interval = interval
         if not os.path.exists(self._output_erih_meta):
@@ -25,14 +18,12 @@ class ErihMeta:
         self._interval = interval
         super(ErihMeta, self).__init__()
 
-
     def find_erih_venue(self, issn_list):
         erih_disciplines = set()
-        erih = pd.read_csv(self._erih_preprocessed_path, sep=";")
-        for index, row in erih.iterrows():
-            for issn in issn_list:
-                if issn in row['venue_id']:
-                    erih_disciplines.add(row['ERIH_disciplines'])
+        for issn in issn_list:
+            discipline = self._erih_preprocessed_path.get_value(issn)
+            if discipline:
+                erih_disciplines.update(discipline)
         erih_disciplines = sorted(list(erih_disciplines))
         return ', '.join(discipline for discipline in erih_disciplines)
 
@@ -88,7 +79,4 @@ class ErihMeta:
                             lines = self.splitted_to_file(count, lines)
         if len(lines) > 0:
             count = count + (self._interval - (int(count) % int(self._interval)))
-            self.splitted_to_file(count, lines) 
-    
-
-                
+            self.splitted_to_file(count, lines)
