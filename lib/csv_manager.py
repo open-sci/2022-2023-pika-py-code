@@ -9,8 +9,8 @@ import zipfile
 
 class CSVManager(object):
     '''
-    This class is able to load a simple CSV composed by two fields, 'id' and
-    'value', and then to index all its items in a structured form so as to be
+    This class is able to load a simple CSV composed by two fields, 'venue_id' and
+    'ERIH_disciplines', and then to index all its items in a structured form so as to be
     easily queried. In addition, it allows one to store new information in the CSV,
     if needed.
     '''
@@ -127,3 +127,5 @@ class CSVManager(object):
             if cur_id not in self.data:
                 self.data[cur_id] = set()
             self.data[cur_id].add(row['ERIH_disciplines'])
+
+
