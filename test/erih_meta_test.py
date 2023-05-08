@@ -9,7 +9,7 @@ META_PRE = os.path.join(BASE, 'meta_preprocessed')
 ERIH_PRE = os.path.join(BASE, 'erih_pre')
 OUTPUT = os.path.join(BASE, 'output')
 
-class TestJalcProcess(unittest.TestCase):
+class TestErihMeta(unittest.TestCase):
 
     def test_find_erih_venue(self):
         e = ErihMeta(META_PRE, ERIH_PRE, OUTPUT, 20)
@@ -54,7 +54,7 @@ class TestJalcProcess(unittest.TestCase):
         for file in output_csv_folder:
             erih_meta = pd.read_csv(file, sep=",")
             erih_meta.fillna('', inplace=True)
-            erih_meta_disciplines = list(erih_meta['erih_disciplines'])
+            erih_meta_disciplines = list(erih_meta['erih_meta_with_disciplines'])
             expected_out = ['Gender Studies, History, Cultural Studies, Media Studies and Communication, Film and Theatre Studies, Sociology, Literature, Interdisciplinary research in the Humanities, Interdisciplinary research in the Social Sciences',
                             '',
                             'Gender Studies, History, Cultural Studies, Media Studies and Communication, Film and Theatre Studies, Sociology, Literature, Interdisciplinary research in the Humanities, Interdisciplinary research in the Social Sciences',
@@ -76,4 +76,4 @@ class TestJalcProcess(unittest.TestCase):
             self.assertEqual(erih_meta_disciplines, expected_out)
 
 
-#python -m unittest discover -s test -p "erih_meta_test.py"
+# python -m unittest discover -s test -p "erih_meta_test.py"

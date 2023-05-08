@@ -49,7 +49,7 @@ class ErihMetaWithDisciplines:
         count = 0
         for file_idx, file in enumerate(tqdm(self._ERIH_META_path), 1):
             chunksize = 10000
-            with pd.read_csv(file, usecols=['id', 'erih_disciplines'],chunksize=chunksize, sep=",") as reader:
+            with pd.read_csv(file, usecols=['id', 'erih_disciplines'], chunksize=chunksize, sep=",") as reader:
                 for chunk in reader:
                     chunk.fillna("", inplace=True)
                     df_dict_list = chunk.to_dict("records")

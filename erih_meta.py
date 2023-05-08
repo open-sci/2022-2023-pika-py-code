@@ -80,3 +80,4 @@ class ErihMeta:
         if len(lines) > 0:
             count = count + (self._interval - (int(count) % int(self._interval)))
             self.splitted_to_file(count, lines)
+            
