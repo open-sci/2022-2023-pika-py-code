@@ -11,16 +11,44 @@ from lib.csv_manager_erih_meta_disciplines import CSVManager
 
 
 class Counter(object):
-    """This class is responsible for answering to the following research questions by following
-    two different approaches, one more concise and another one that produces files useful also for other researches.
-    ###################################################################################################################
+    """
+    This class is responsible for answering to the following research questions by following
+    two different approaches, one more concise and another one that produces files that may result
+    useful also for additional researches.
+
     1. How many citations (according to COCI) involve, either as citing or cited entities, publications in SSH journals
     (according to ERIH-PLUS) included in OpenCitations META?
-    ##################################################################################################################
     2. What are the disciplines that cites the most and those cited the most?
-    ###################################################################################################################
     3. How many citations start from and go to publications in OpenCitations META that are not included in SSH journals?
-    ###################################################################################################################
+
+    The majority of operations are I/O bound, therefore the load is distributed among the available threads.
+    ...
+
+    Init Attributes
+    ----------
+    These must be added when the class is instantiated.
+
+    - coci_preprocessed_path : str
+        path of the folder containing the preprocessed COCI files
+    - erih_meta_path : str
+        path of the folder containing the ERIH-PLUS files
+    - num_cpu : int
+        number of cpu available for the execution of the program,
+        by default it is set as the entire number of cpu available
+        in the machine. This is also usefult to define the number of
+        threads to use for the execution of the program, which is
+        defined as num_cpu * 10.
+
+    Callable Methods
+    -------
+    Please, do not call other methods than the ones listed below.
+
+    - get_all_files(i_dir_or_compr, req_type):
+        It returns a list containing all the files found
+        in the input folder and with the extension required, like ".csv".
+    - execute_count(output_dir='OutputFiles/', create_subfiles=False, answer_to_q1=True, answer_to_q2=True, answer_to_q3=True, interval=10000):
+        It executes the count of the citations according to the research questions.
+    
     """
 
     _entity_columns_to_use_erih_meta_disciplines = ['id', 'erih_disciplines']
@@ -28,10 +56,11 @@ class Counter(object):
     _entity_columns_to_use_q1_q3 = ['citing', 'is_citing_SSH', 'cited', 'is_cited_SSH']
     _entity_columns_to_use_q2 = ['id', 'citing', 'cited', 'disciplines']
 
-    def __init__(self, coci_preprocessed_path, erih_meta_path):
+    def __init__(self, coci_preprocessed_path, erih_meta_path, num_cpus=None):
         self._list_coci_files = self.get_all_files(coci_preprocessed_path, '.csv')
         self._list_erih_meta_files = self.get_all_files(erih_meta_path, '.csv')
-        self.num_cpu = multiprocessing.cpu_count() - 1
+        self.num_cpu = num_cpus if num_cpus!=None else multiprocessing.cpu_count()
+        self.num_threads = self.num_cpu * 4 # 4 threads per cpu
 
     def get_all_files(self, i_dir_or_compr, req_type):
         """It returns a list containing all the files found
@@ -307,7 +336,69 @@ class Counter(object):
             citations_count += len(results)
         return citations_count
 
-    def execute_count(self, output_dir='OutputFiles/', create_subfiles=False, answer_to_q1=True, answer_to_q2=True, answer_to_q3=True,  interval=10000):
+    def iterate_erih_meta(self):
+        ssh_papers = list()
+        not_ssh_papers = list()
+        id_disciplines_map = dict()
+        ssh_disciplines = set()
+
+        for filename in tqdm(self._list_erih_meta_files, total=len(self._list_erih_meta_files), desc='Building lists of DOIs over ERIH-PLUS and META...', colour='red', smoothing=0.1):
+            df = pd.read_csv(filename) # it was -> os.path.join(erih_meta_dir_path, filename))
+            df = df[['id', 'erih_disciplines']] # Attention to the name given to the erih_disciplines column, if erih or ERIH
+            # fill all the possible NaN or None with ""
+            df = df.fillna('')
+            # create boolean mask for erih_disciplines column
+            mask = df['erih_disciplines'] != ''
+            # filter the dataframe with the above mask
+            ssh_df = df[mask]
+            ssh_df = ssh_df.reset_index(drop=True)
+
+            for _, row in ssh_df.iterrows():
+                disciplines = row['erih_disciplines'].split(',')
+                disciplines = [discipline.strip() for discipline in disciplines]
+                doi = row['id']
+                if doi not in id_disciplines_map:
+                    id_disciplines_map[doi] = disciplines
+                else:
+                    id_disciplines_map[doi].extend(disciplines)
+                for discipline in disciplines:
+                    if discipline not in ssh_disciplines:
+                        ssh_disciplines.add(discipline)
+                    
+            # Create a second dataframe from the above mask, where are kept only the False rows in the mask
+            not_ssh_df = df[~mask]
+            not_ssh_df = not_ssh_df.reset_index(drop=True)
+            # Get the unique values of the id column
+            unique_ssh = ssh_df['id'].unique().tolist()
+            unique_not_ssh = not_ssh_df['id'].unique().tolist()
+            # Append the unique values to the list
+            ssh_papers.extend(unique_ssh)
+            not_ssh_papers.extend(unique_not_ssh)
+
+        print('Decoupling DOIs...')
+        ssh_papers_unique = []
+        for paper in ssh_papers:
+            papers = paper.split(' ')
+            ssh_papers_unique.extend(papers)
+
+        not_ssh_papers_unique = []
+        for paper in not_ssh_papers:
+            papers = paper.split(' ')
+            not_ssh_papers_unique.extend(papers)
+
+        unique_id_disciplines_map = dict()
+        for key, value in id_disciplines_map.items():
+            multiple_keys = key.split(' ')
+            for k in multiple_keys:
+                unique_id_disciplines_map[k] = value
+
+        print('Creating sets for unique DOIs...')
+        ssh_set = set(ssh_papers_unique)
+        not_ssh_set = set(not_ssh_papers_unique)
+
+        return ssh_set, not_ssh_set, unique_id_disciplines_map, ssh_disciplines
+
+    def execute_count(self, output_dir='OutputFiles/', create_subfiles=False, answer_to_q1=True, answer_to_q2=True, answer_to_q3=True, interval=10000):
         """
         This is the main method of the class, the one that orchestrates the entire process. It is infact the method that
         is called by the final user to answer all the research questions.
@@ -331,17 +422,6 @@ class Counter(object):
             self._path_erih_meta_without_disciplines = os.path.join(output_dir, 'erih_meta_without_disciplines')
             self._path_dataset_no_SSH = os.path.join(output_dir, 'dataset_no_SSH')
             self._path_dataset_map_disciplines = os.path.join(output_dir, 'dataset_map_disciplines')
-
-        '''question_1
-        chiama create_erih_meta_with_disciplines -> crea un dataset con colonne "id" e "erih_disciplines" contenenti solo i doi SSH con discipline associate 
-        chiama create_dataset_SSH -> crea il dataset che utilizziamo per rispondere alla Q1, cioè un dataset a due colonne "citing" e "cited" compilato con i doi solo SSH
-        chiama count_lines -> Va messo come input del metodo "self._path_dataset_SSH"; conta le righe del dataset crato con "create_dataset_SSH e da la risposta alla Q1"
-        '''
-        '''question 3
-        chiama create_erih_meta_without_disciplines -> crea un dataset a una sola colonna "id" che contiene solo i doi senza disciplina associata
-        chiama create_dataset_no_SSH -> crea il dataset che utilizziamo per rispondere alla Q3, cioè un dataset a due colonne "citing" e "cited" compilato con i doi non SSH
-        chiama count_lines -> Va messo come input del metodo "self._path_dataset_no_SSH"; conta le righe del dataset crato con "create_dataset_no_SSH e da la risposta alla Q3"
-        '''
 
         if create_subfiles:
             if answer_to_q1:
@@ -368,47 +448,8 @@ class Counter(object):
 
         else:
             print('\nSarting the process, be patient, it will take a while...\n')
-            ssh_papers = list()
-            not_ssh_papers = list()
-
-            for filename in tqdm(self._list_erih_meta_files ,total=len(self._list_erih_meta_files), desc='Building lists of DOIs over ERIH-PLUS and META...', colour='yellow', smoothing=0.1):
-                df = pd.read_csv(filename) # it was -> os.path.join(erih_meta_dir_path, filename))
-                df = df[['id', 'erih_disciplines']] # Attention to the name given to the erih_disciplines column, if erih or ERIH
-                # fill all the possible NaN or None with ""
-                df = df.fillna('')
-                # create boolean mask for erih_disciplines column
-                mask = df['erih_disciplines'] != ''
-
-                # filter the dataframe with the above mask
-                ssh_df = df[mask]
-                ssh_df = ssh_df.reset_index(drop=True)
-
-                # Create a second dataframe from the above mask, where are kept only the False rows in the mask
-                not_ssh_df = df[~mask]
-                not_ssh_df = not_ssh_df.reset_index(drop=True)
-
-                # Get the unique values of the id column
-                unique_ssh = ssh_df['id'].unique().tolist()
-                unique_not_ssh = not_ssh_df['id'].unique().tolist()
-
-                # Append the unique values to the list
-                ssh_papers.extend(unique_ssh)
-                not_ssh_papers.extend(unique_not_ssh)
-
-            print('Decoupling DOIs from lists...')
-            ssh_papers_unique = []
-            for paper in ssh_papers:
-                papers = paper.split(' ')
-                ssh_papers_unique.extend(papers)
-
-            not_ssh_papers_unique = []
-            for paper in not_ssh_papers:
-                papers = paper.split(' ')
-                not_ssh_papers_unique.extend(papers)
-
-            print('Creating sets for unique DOIs...')
-            ssh_set = set(ssh_papers_unique)
-            not_ssh_set = set(not_ssh_papers_unique)
+            
+            ssh_set, not_ssh_set, id_disciplines_map, ssh_disciplines = self.iterate_erih_meta()
 
             ssh_citations = 0
             not_ssh_citations = 0
@@ -420,30 +461,92 @@ class Counter(object):
                     return 'not_ssh'
                 else:
                     return 'other'
-            
-            def count_citations_in_file(ssh_set, not_ssh_set, filepath):
+
+            def count_citations_in_file(id_disciplines_map, ssh_disciplines, ssh_set, not_ssh_set, filepath):
                 df = pd.read_csv(filepath, usecols=['citing', 'cited'])
-                citation_counts = df.apply(lambda row: count_citations(ssh_set, not_ssh_set, row), axis=1).value_counts()
-                return citation_counts.get('ssh', 0), citation_counts.get('not_ssh', 0)
+                # These below are just placeholders in case someone do not need the 3 answers but just some of them
+                citation_counts = {'ssh': 0, 'not_ssh': 0}
+                discipline_counter = dict()
+                for discipline in ssh_disciplines:
+                    discipline_counter[discipline] = {'citing': 0, 'cited': 0}
+                citing_disciplines = df['citing'].tolist()
+                cited_disciplines = df['cited'].tolist()
+
+                for i in range(len(citing_disciplines)):
+                    if answer_to_q1 or answer_to_q3:
+                        if citing_disciplines[i] in ssh_set or cited_disciplines[i] in ssh_set:
+                            citation_counts['ssh'] += 1
+                        elif citing_disciplines[i] in not_ssh_set and cited_disciplines[i] in not_ssh_set:
+                            citation_counts['not_ssh'] += 1
+                    if answer_to_q2:
+                        if citing_disciplines[i] in ssh_set:
+                            for discipline in id_disciplines_map[citing_disciplines[i]]:
+                                discipline_counter[discipline]['citing'] += 1
+                        if cited_disciplines[i] in ssh_set:
+                            for discipline in id_disciplines_map[cited_disciplines[i]]:
+                                discipline_counter[discipline]['cited'] += 1
+
+                return discipline_counter, citation_counts.get('ssh', 0), citation_counts.get('not_ssh', 0)
+            
 
             print('Starting to count...\n')
-            with ThreadPoolExecutor(max_workers=self.num_cpu) as executor:
-                count_citations_partial = partial(count_citations_in_file, ssh_set, not_ssh_set)
-                results = list(tqdm(executor.map(count_citations_partial, self._list_coci_files), total=len(self._list_coci_files), desc='Iterating files...', colour='green', smoothing=0.1))
+            with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
+                count_citations_partial = partial(count_citations_in_file, id_disciplines_map, ssh_disciplines, ssh_set, not_ssh_set)
+                results = list(tqdm(executor.map(count_citations_partial, self._list_coci_files), total=len(self._list_coci_files), desc='Iterating files...', colour='cyan', smoothing=0.1))
 
-            print('Updating results...')
-            for ssh_count, not_ssh_count in results:
-                ssh_citations += ssh_count
-                not_ssh_citations += not_ssh_count
+            print('Updating results...\n')
+            discipline_counter = {}
+            not_ssh_citations = 0
+            ssh_citations = 0
+            separator = '#' * 50
+            if answer_to_q1 and answer_to_q2 and answer_to_q3:
+                for discipline_dict, ssh_count, not_ssh_count in results:
+                    ssh_citations += ssh_count
+                    not_ssh_citations += not_ssh_count
+                    for discipline, counts in discipline_dict.items():
+                        if discipline not in discipline_counter:
+                            discipline_counter[discipline] = {'citing': 0, 'cited': 0}
+                        discipline_counter[discipline]['citing'] += counts['citing']
+                        discipline_counter[discipline]['cited'] += counts['cited']
 
-            print('Number of citations that (according to COCI) involve, either as citing or cited entities, publications in SSH journals (according to ERIH-PLUS) included in OpenCitations Meta: %d' %ssh_citations)
-            print('Number of citations that (according to COCI) start from and go to publications in OpenCitations Meta that are not included in SSH journals: %d' %not_ssh_citations)
-        
-        print('Done...')
-        # return ssh_citations, not_ssh_citations
+                discipline_with_highest_citing = max(discipline_counter, key=lambda x: discipline_counter[x]['citing'])
+                discipline_with_highest_cited = max(discipline_counter, key=lambda x: discipline_counter[x]['cited'])
 
-"""
-c = Counter("/Volumes/Extreme SSD/OS_data/Processed_data/smaller_COCI/", "/Volumes/Extreme SSD/OS_data/Processed_data/ERIH_META_prep/")
+                print(f'ANSWER TO QUESTION 1:\nNumber of citations that (according to COCI) involve, either as citing or cited entities, publications in SSH journals (according to ERIH-PLUS) included in OpenCitations Meta: {ssh_citations}')
+                print(f'\n{separator}\n')
+                print(f'ANSWER TO QUESTION 2:\nThe most citing discipline is {discipline_with_highest_citing}: {discipline_counter[discipline_with_highest_citing]["citing"]}\nThe most cited discipline is {discipline_with_highest_cited}: {discipline_counter[discipline_with_highest_cited]["cited"]}')
+                print(f'\n{separator}\n')
+                print(f'ANSWER TO QUESTION 3:\nNumber of citations that (according to COCI) start from and go to publications in OpenCitations Meta that are not included in SSH journals: {not_ssh_citations}')
+                print('\nDone...')
+            else:
+                if answer_to_q1:
+                    for _, ssh_count, _ in results:
+                        ssh_citations += ssh_count
+                    print(f'ANSWER TO QUESTION 1:\nNumber of citations that (according to COCI) involve, either as citing or cited entities, publications in SSH journals (according to ERIH-PLUS) included in OpenCitations Meta: {ssh_citations}')
+                    print(f'\n{separator}\n')
+                if answer_to_q2:
+                    for discipline_dict, _, _ in results:
+                        for discipline, counts in discipline_dict.items():
+                            if discipline not in discipline_counter:
+                                discipline_counter[discipline] = {'citing': 0, 'cited': 0}
+                            discipline_counter[discipline]['citing'] += counts['citing']
+                            discipline_counter[discipline]['cited'] += counts['cited']
+                    discipline_with_highest_citing = max(discipline_counter, key=lambda x: discipline_counter[x]['citing'])
+                    discipline_with_highest_cited = max(discipline_counter, key=lambda x: discipline_counter[x]['cited'])
+                    print(f'ANSWER TO QUESTION 2:\nThe most citing discipline is {discipline_with_highest_citing}: {discipline_counter[discipline_with_highest_citing]["citing"]}\nThe most cited discipline is {discipline_with_highest_cited}: {discipline_counter[discipline_with_highest_cited]["cited"]}')
+                    print(f'\n{separator}\n')
+                if answer_to_q3:
+                    for _, _, not_ssh_count in results:
+                        not_ssh_citations += not_ssh_count
+                    print(f'ANSWER TO QUESTION 3:\nNumber of citations that (according to COCI) start from and go to publications in OpenCitations Meta that are not included in SSH journals: {not_ssh_citations}')
+                    print('\nDone...')
+
+            return ssh_citations, not_ssh_citations, discipline_with_highest_citing, discipline_with_highest_cited, discipline_counter
+
+
+
+
+c = Counter("/Volumes/Extreme SSD/OS_data/Processed_data/smaller_COCI/", "/Volumes/Extreme SSD/OS_data/Processed_data/ERIH_META_Marta/")
 count = c.execute_count()
 print(count)
 
@@ -461,3 +564,4 @@ print(count)
 #    if file.startswith(" "):
 #        print(file)
 
+"""
