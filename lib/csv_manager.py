@@ -1,19 +1,18 @@
 from csv import DictReader, writer
 from io import StringIO
-import os
 from os import mkdir, sep, walk
 from os.path import exists, isdir, join
 from typing import Dict
-import zipfile
 
 
 class CSVManager(object):
-    '''
+    """https://archive.softwareheritage.org/swh:1:cnt:8362d20804ab87cf6862ffe37f2624e26634eff2;origin=https://github.com/opencitations/oc_meta;visit=swh:1:snp:dcbd1d5baf07b98504292230c53215f1e080e782;anchor=swh:1:rev:8510cdd12e3693202231fef27b0311ca7b88414d;path=/oc_meta/lib/csvmanager.py;lines=24"""
+    """
     This class is able to load a simple CSV composed by two fields, 'venue_id' and
     'ERIH_disciplines', and then to index all its items in a structured form so as to be
     easily queried. In addition, it allows one to store new information in the CSV,
     if needed.
-    '''
+    """
 
     def __init__(self, output_path: str = None, line_threshold=10000, low_memory: bool = False):
         self.output_path = output_path

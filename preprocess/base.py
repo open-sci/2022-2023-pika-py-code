@@ -9,15 +9,13 @@ import zstandard as zstd
 
 
 class Preprocessing(metaclass=ABCMeta):
-    """This is the interface for implementing preprocessors for specific datasources.
-    It provides the signatures of the methods for preprocessing a dump"""
-
+    """https://archive.softwareheritage.org/swh:1:cnt:2faf157225885e5420cdd740bee5311649c1b1a1;origin=https://pypi.org/project/oc-preprocessing/;visit=swh:1:snp:b429746305d915b577b0ed022b2650b70ecf5dc2;anchor=swh:1:rel:44fb3b0a058877ea4ef15490a499391c910a384f;path=/oc_preprocessing-0.0.5/preprocessing/base.py;lines=14"""
     def __init__(self, **params):
         """preprocessor constructor."""
         for key in params:
             setattr(self, key, params[key])
-
     def get_all_files(self, i_dir_or_compr, req_type):
+        """https://archive.softwareheritage.org/swh:1:cnt:2faf157225885e5420cdd740bee5311649c1b1a1;origin=https://pypi.org/project/oc-preprocessing/;visit=swh:1:snp:b429746305d915b577b0ed022b2650b70ecf5dc2;anchor=swh:1:rel:44fb3b0a058877ea4ef15490a499391c910a384f;path=/oc_preprocessing-0.0.5/preprocessing/base.py;lines=27"""
         result = []
         targz_fd = None
 
@@ -70,13 +68,5 @@ class Preprocessing(metaclass=ABCMeta):
         return result, targz_fd
 
 
-    @abstractmethod
-    def split_input(self):
-        """ ...
-        """
-        pass
 
-    @abstractmethod
-    def splitted_to_file(self, cur_n, data, type):
-        pass
 

@@ -2,7 +2,12 @@ import csv
 import os
 from os import makedirs
 from os.path import exists
-class ErihPreProcessing():
+
+class ErihPreProcessing:
+    """This class is responsible for the preprocessing of the ERIH_PLUS dataset. It keeps only the
+    necessary information for answering to the three research questions, that is contained in the columns
+    "Print ISSN", "Online ISSN" and "ERIH PLUS Disciplines". In the output file the two columns "Print ISSN" and
+    "Online ISSN" are merged in a new column called "venue_id"."""
     def __init__(self, input_file_path, output_dir):
         self._input_file_path = input_file_path
         self._output_dir = output_dir

@@ -6,6 +6,9 @@ import csv
 from lib.csv_manager import CSVManager
 
 class ErihMeta:
+    """This class is responsible for merging ERIH_preprocessed with META_preprocessed. The merge is based on
+    the column "venue". The output CSVs files are formed by all the columns of META_preprocessed plus the column
+    "erih_disciplines" that comes from ERIH_preprocessed."""
     _entity_columns_to_keep = ["id", "title", "author", "issue", "volume", "venue", "page", "pub_date", "type", "publisher", "editor", "erih_disciplines"]
 
     def __init__(self, meta_preprocessed_path, erih_preprocessed_path, output_erih_meta, interval):
@@ -80,4 +83,3 @@ class ErihMeta:
         if len(lines) > 0:
             count = count + (self._interval - (int(count) % int(self._interval)))
             self.splitted_to_file(count, lines)
-            
