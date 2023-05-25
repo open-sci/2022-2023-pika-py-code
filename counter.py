@@ -173,7 +173,7 @@ class Counter(object):
             count = count + (self._interval - (int(count) % int(self._interval)))
             self.splitted_to_file(count, data, entity_columns_to_use, process_output_dir)    
 
-    def create_disciplines_map(self, ):
+    def create_disciplines_map(self):
         """This method iterates over COCI_preprocessed and uses the class CSVManager for searching in "erih_meta_with_disciplines"
         the dois found in COCI and the disciplines associated to them. It creates new files with four columns: "id", "citing", "cited" and "disciplines".
         The two columns "citing" and "cited" contain boolean values, according to the role that the doi has in the citation according to COCI.
