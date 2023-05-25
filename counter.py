@@ -454,14 +454,6 @@ class Counter(object):
             ssh_citations = 0
             not_ssh_citations = 0
 
-            def count_citations(ssh_set, not_ssh_set, row):
-                if row['citing'] in ssh_set or row['cited'] in ssh_set:
-                    return 'ssh'
-                elif row['citing'] in not_ssh_set and row['cited'] in not_ssh_set:
-                    return 'not_ssh'
-                else:
-                    return 'other'
-
             def count_citations_in_file(id_disciplines_map, ssh_disciplines, ssh_set, not_ssh_set, filepath):
                 df = pd.read_csv(filepath, usecols=['citing', 'cited'])
                 # These below are just placeholders in case someone do not need the 3 answers but just some of them
