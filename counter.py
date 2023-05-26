@@ -438,7 +438,7 @@ class Counter(object):
                 self.create_disciplines_map()
                 count_disciplines = self.create_count_dictionaries()
                 print(f"The most citing discipline is {count_disciplines[3]}: {count_disciplines[0]}", f"The most cited discipline is {count_disciplines[2]}: {count_disciplines[1]}")
-                print(f"The dictionaries that we used to count the disciplines occurrences are:/n dict_citing = {count_disciplines[5]} /n dict_cited = {count_disciplines[6]}")
+                print(f"The dictionaries that we used to count the disciplines occurrences are:/n dict_citing = {count_disciplines[4]} /n dict_cited = {count_disciplines[5]}")
 
             if answer_to_q3:
                 # Answer to question 3
