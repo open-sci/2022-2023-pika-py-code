@@ -39,7 +39,7 @@ class ErihMeta:
                             result.append(os.path.join(cur_dir, cur_file))
         return result
 
-    def splitted_to_file(self, cur_n, lines, type=None):
+    def splitted_to_file(self, cur_n, lines):
             if int(cur_n) != 0 and int(cur_n) % int(self._interval) == 0:
                 filename = "filtered_" + str(cur_n // self._interval) + '.csv'
                 if os.path.exists(os.path.join(self._output_erih_meta, filename)):
