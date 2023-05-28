@@ -103,3 +103,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# please call the run.py file in the terminal and set each parameter (--'xyz') with the actual path of the folder 
