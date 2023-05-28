@@ -93,9 +93,6 @@ def main():
     coci_preprocessor = CociPreProcessing(args.COCI_input_path, args.COCI_processed_path, args.COCI_interval, args.COCI_meta_list_dois)
     coci_preprocessor.split_input(args.list_DOI_not_in_Meta)
 
-    erih_meta_preprocessor = ErihPreProcessing(args.ERIH_META_input_path, args.ERIH_META_processed_path)
-    erih_meta_preprocessor.write_csv()
-
     erih_meta = ErihMeta(args.OCMeta_processed_path, args.ErihPlus_processed_path, args.ERIH_META_processed_path, args.ERIH_META_interval)
     erih_meta.erih_meta()
 
