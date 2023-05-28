@@ -117,7 +117,7 @@ class CociPreProcessing(Preprocessing):
                                       self._list_excluded_dois)
 
 
-c = CociPreProcessing(r"C:\Users\marta\Desktop\2020-08-20T18_12_28_2 (2).zip", r"C:\Users\marta\Desktop\output_prova_check_meta", 10000, r"C:\Users\marta\Desktop\meta_list_dois")
-c.split_input(list_dois_excluded_from_meta=True)
+#c = CociPreProcessing(r"C:\Users\marta\Desktop\2020-08-20T18_12_28_2 (2).zip", r"C:\Users\marta\Desktop\output_prova_check_meta", 10000, r"C:\Users\marta\Desktop\meta_list_dois")
+#c.split_input(list_dois_excluded_from_meta=True)
 
 

@@ -125,6 +125,6 @@ class MetaPreProcessing(Preprocessing):
             count = count + (self._interval - (int(count) % int(self._interval)))
             self.splitted_to_file(count, lines, self._column_list_meta_dois, self._output_meta_dois)
 
-m = MetaPreProcessing(r"D:\OpenScience_project\csv.zip", r"D:\OpenScience_project\output_meta_24_05", 10000)
-m.split_input()
-m.create_list_dois()
+#m = MetaPreProcessing(r"D:\OpenScience_project\csv.zip", r"D:\OpenScience_project\output_meta_24_05", 10000)
+#m.split_input()
+#m.create_list_dois()
