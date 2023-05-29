@@ -22,6 +22,22 @@ from erih_meta import ErihMeta
 from counter import Counter
 import argparse
 
+"""
+Example of usage:
+- Navigate to the folder containing the run.py file
+- Run the following command:
+python run.py --OCMeta_input_path /path/to/OCMeta_input_file 
+--OCMeta_processed_path /path/to/OCMeta_output_directory 
+--OCMeta_interval 10000 --ErihPlus_input_path /path/to/ErihPlus_input_file 
+--ErihPlus_processed_path /path/to/ErihPlus_output_directory 
+--COCI_input_path /path/to/COCI_input_file 
+--COCI_processed_path /path/to/COCI_output_directory 
+--COCI_meta_list_dois /path/to/COCI_meta_list_dois 
+--ERIH_META_processed_path /path/to/ERIH_META_output_directory 
+--num_cpus 4 --output_dir /path/to/output_directory 
+--create_subfiles False --answer_to_q1 True 
+--answer_to_q2 True --answer_to_q3 True --interval 10000
+"""
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Citation counter')
@@ -103,5 +119,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# please call the run.py file in the terminal and set each parameter (--'xyz') with the actual path of the folder 
