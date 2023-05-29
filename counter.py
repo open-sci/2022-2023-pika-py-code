@@ -539,12 +539,12 @@ class Counter(object):
 
 
 
-
+"""
 c = Counter("/Volumes/Extreme SSD/OS_data/Processed_data/smaller_COCI/", "/Volumes/Extreme SSD/OS_data/Processed_data/ERIH_META_Marta/")
 count = c.execute_count()
 print(count)
 
-"""
+
 c = Counter(r"D:\OpenScience_project\coci_preprocessed", r"D:\OpenScience_project\erih_meta2_10000")
 
 #files = c.get_all_files("/Volumes/Extreme SSD/OS_data/Processed_data/ERIH_META_Marta/", '.csv')
